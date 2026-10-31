@@ -225,6 +225,16 @@ function handleCsvResults(results) {
         }
     });
 
+    // Apply smooth fade-in animation to the dashboard sections
+    const summary = document.getElementById("summaryCards");
+    const quality = document.getElementById("qualitySection");
+    const charts = document.getElementById("chartsSection");
+    const preview = document.getElementById("dataPreview");
+
+    [summary, quality, charts, preview].forEach(el => el.classList.remove("animate-in"));
+    void summary.offsetWidth; // Force browser reflow to restart animation
+    [summary, quality, charts, preview].forEach(el => el.classList.add("animate-in"));
+
     alert("Dataset uploaded and displayed successfully!");
 }
 
@@ -263,4 +273,10 @@ function resetDashboard() {
     document.getElementById("gradeSpread").textContent = "—";
 
     destroyCharts();
+
+    // Remove animation class so it's fresh for the next upload
+    ["summaryCards", "qualitySection", "chartsSection", "dataPreview"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("animate-in");
+    });
 }
