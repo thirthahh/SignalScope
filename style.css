@@ -1,0 +1,245 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fb;
+    color: #1e293b;
+}
+
+header {
+    background-color: #16324f;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+header h1 {
+    margin-bottom: 8px;
+}
+
+main {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+section {
+    background-color: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+    margin-bottom: 12px;
+    color: #16324f;
+}
+
+section p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+button {
+    background-color: #2563eb;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+#resetButton {
+    background-color: #e2e8f0;
+    color: #16324f;
+}
+
+#resetButton:hover {
+    background-color: #cbd5e1;
+}
+
+.button-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+/* Mobile responsive design */
+@media (max-width: 600px) {
+    header {
+        padding: 20px 12px;
+    }
+
+    main {
+        margin: 15px auto;
+        padding: 12px;
+    }
+
+    section {
+        padding: 18px;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .button-row {
+        flex-direction: column;
+    }
+}
+
+#dataPreview {
+    margin-top: 30px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+#dataPreview h2 {
+    color: #16324f;
+    margin-bottom: 20px;
+}
+
+#tableContainer table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+#tableContainer th,
+#tableContainer td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#tableContainer th {
+    background-color: #16324f;
+    color: white;
+    font-weight: bold;
+}
+
+#tableContainer tr:nth-child(even) {
+    background-color: #f4f7fb;
+}
+
+#tableContainer tr:hover {
+    background-color: #eaf2ff;
+}
+
+#summaryCards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 25px 0;
+}
+
+.summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card h3 {
+    color: #16324f;
+    font-size: 16px;
+}
+
+.summary-card p {
+    color: #2563eb;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+/* Top Student & Grade Spread cards need smaller text */
+#topStudent,
+#gradeSpread {
+    font-size: 16px;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    #summaryCards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+#qualitySection {
+    margin: 25px 0;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+#qualitySection h2 {
+    color: #16324f;
+    margin-bottom: 20px;
+}
+
+.quality-card {
+    display: inline-block;
+    background: #f4f7fb;
+    padding: 20px;
+    margin: 8px;
+    min-width: 180px;
+    border-radius: 10px;
+}
+
+.quality-card h3 {
+    color: #16324f;
+    font-size: 15px;
+}
+
+.quality-card p {
+    color: #2563eb;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+#chartsSection {
+    margin: 25px 0;
+}
+
+#chartsSection h2 {
+    color: #16324f;
+    margin-bottom: 20px;
+}
+
+.chart-card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card h3 {
+    color: #16324f;
+    margin-bottom: 20px;
+}
+
+.chart-card canvas {
+    max-height: 350px;
+}
+
+@media (max-width: 600px) {
+    .quality-card {
+        display: block;
+        margin: 8px 0;
+    }
+}
