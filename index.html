@@ -3,71 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignalScope</title>
+    <title>SignalScope | Analytics</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Two fonts: Space Grotesk for Headings, Inter for Body -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+
     <header>
-        <h1>SignalScope</h1>
-        <p>Education Data Intelligence</p>
+        <div class="logo">
+            <i class="fa-solid fa-chart-simple"></i> SignalScope
+        </div>
+        <p>Data Intelligence Dashboard</p>
     </header>
 
     <main>
-        <section>
-            <h2>Welcome to SignalScope</h2>
-            <p>Understand student performance through better data.</p>
-        </section>
-
-        <section>
-            <h2>Dashboard</h2>
-            <p>Datasets analyzed: 0</p>
-            <p>Data quality issues: 0</p>
-            <p>Reports created: 0</p>
-        </section>
-
-        <section>
-            <h2>Get Started</h2>
-            <p>Import an education dataset to begin your analysis.</p>
-            <input type="file" id="csvFile" accept=".csv" hidden>
-
+        <!-- Import Section -->
+        <section class="card import-section fade-in">
+            <div class="import-content">
+                <h2>Dataset Overview</h2>
+                <p>Upload a CSV file to instantly analyze student performance and data quality.</p>
+                <input type="file" id="csvFile" accept=".csv" hidden>
+            </div>
             <div class="button-row">
-                <button onclick="document.getElementById('csvFile').click()">
-                    Import Dataset
+                <button onclick="document.getElementById('csvFile').click()" class="btn-primary">
+                    <i class="fa-solid fa-upload"></i> Import Dataset
                 </button>
-                <button id="resetButton" onclick="resetDashboard()">
-                    Reset Dataset
+                <button id="resetButton" onclick="resetDashboard()" class="btn-secondary">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
                 </button>
             </div>
+        </section>
 
-            <div id="summaryCards">
-                <div class="summary-card">
-                    <h3>Total Students</h3>
-                    <p id="totalStudents">0</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Total Columns</h3>
-                    <p id="totalColumns">0</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Average Marks</h3>
-                    <p id="averageMarks">0</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Average Attendance</h3>
-                    <p id="averageAttendance">0</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Top Student</h3>
-                    <p id="topStudent">—</p>
-                </div>
-                <div class="summary-card">
-                    <h3>Grade Spread</h3>
-                    <p id="gradeSpread">—</p>
-                </div>
+        <!-- Summary Cards -->
+        <div id="summaryCards" class="fade-in">
+            <div class="summary-card">
+                <h3>Total Students</h3>
+                <p id="totalStudents">0</p>
             </div>
+            <div class="summary-card">
+                <h3>Total Columns</h3>
+                <p id="totalColumns">0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Average Marks</h3>
+                <p id="averageMarks">0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Average Attendance</h3>
+                <p id="averageAttendance">0</p>
+            </div>
+            <div class="summary-card">
+                <h3>Top Student</h3>
+                <p id="topStudent">—</p>
+            </div>
+            <div class="summary-card">
+                <h3>Grade Spread</h3>
+                <p id="gradeSpread">—</p>
+            </div>
+        </div>
 
-            <div id="qualitySection">
-                <h2>Data Quality Analysis</h2>
+        <!-- Data Quality -->
+        <div id="qualitySection" class="card fade-in">
+            <h2>Data Quality Analysis</h2>
+            <div class="quality-grid">
                 <div class="quality-card">
                     <h3>Missing Values</h3>
                     <p id="missingValues">0</p>
@@ -77,10 +78,12 @@
                     <p id="duplicateRecords">0</p>
                 </div>
             </div>
+        </div>
 
-            <div id="chartsSection">
-                <h2>Data Visualization</h2>
-
+        <!-- Charts -->
+        <div id="chartsSection" class="fade-in">
+            <h2>Data Visualization</h2>
+            <div class="chart-grid">
                 <div class="chart-card">
                     <h3>Student Performance</h3>
                     <canvas id="performanceChart"></canvas>
@@ -90,7 +93,7 @@
                     <canvas id="departmentChart"></canvas>
                 </div>
                 <div class="chart-card">
-                    <h3>Average Marks by Department</h3>
+                    <h3>Avg Marks by Department</h3>
                     <canvas id="departmentAvgChart"></canvas>
                 </div>
                 <div class="chart-card">
@@ -98,12 +101,15 @@
                     <canvas id="gradeChart"></canvas>
                 </div>
             </div>
+        </div>
 
-            <div id="dataPreview">
-                <h2>Dataset Preview</h2>
+        <!-- Table -->
+        <div id="dataPreview" class="card fade-in">
+            <h2>Dataset Preview</h2>
+            <div class="table-container">
                 <div id="tableContainer"></div>
             </div>
-        </section>
+        </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
