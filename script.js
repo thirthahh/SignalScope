@@ -8,6 +8,11 @@ const tableContainer = document.getElementById("tableContainer");
 
 const REQUIRED_COLUMNS = ["Student_ID", "Department", "Attendance", "Marks", "Grade"];
 
+// Chart.js Global Font and Color settings
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = "#8a8887"; // text-muted
+Chart.defaults.borderColor = "#222222"; // border
+
 function showError(message) {
     alert("⚠️ " + message);
 }
@@ -54,45 +59,22 @@ function handleCsvResults(results) {
 
     const missingColumns = REQUIRED_COLUMNS.filter(col => !columns.includes(col));
     if (missingColumns.length > 0) {
-        showError(
-            "Missing required column(s): " + missingColumns.join(", ") +
-            "\nExpected columns: " + REQUIRED_COLUMNS.join(", ")
-        );
+        showError("Missing required column(s): " + missingColumns.join(", "));
         return;
     }
 
-    const validMarksRows = data.filter(row =>
-        row.Marks?.toString().trim() !== "" &&
-        Number.isFinite(Number(row.Marks)) &&
-        Number(row.Marks) >= 0
-    );
+    const validMarksRows = data.filter(row => row.Marks?.toString().trim() !== "" && Number.isFinite(Number(row.Marks)));
+    const validAttendanceRows = data.filter(row => row.Attendance?.toString().trim() !== "" && Number.isFinite(Number(row.Attendance)));
 
-    const validAttendanceRows = data.filter(row =>
-        row.Attendance?.toString().trim() !== "" &&
-        Number.isFinite(Number(row.Attendance)) &&
-        Number(row.Attendance) >= 0
-    );
-
-    if (validMarksRows.length === 0 && validAttendanceRows.length === 0) {
-        showError("No valid numeric values found in Marks or Attendance columns.");
-        return;
-    }
-
-    // Summary cards
     document.getElementById("totalStudents").textContent = data.length;
     document.getElementById("totalColumns").textContent = columns.length;
 
-    const avgMarks = validMarksRows.length
-        ? validMarksRows.reduce((s, r) => s + Number(r.Marks), 0) / validMarksRows.length
-        : 0;
+    const avgMarks = validMarksRows.length ? validMarksRows.reduce((s, r) => s + Number(r.Marks), 0) / validMarksRows.length : 0;
     document.getElementById("averageMarks").textContent = avgMarks.toFixed(2);
 
-    const avgAtt = validAttendanceRows.length
-        ? validAttendanceRows.reduce((s, r) => s + Number(r.Attendance), 0) / validAttendanceRows.length
-        : 0;
+    const avgAtt = validAttendanceRows.length ? validAttendanceRows.reduce((s, r) => s + Number(r.Attendance), 0) / validAttendanceRows.length : 0;
     document.getElementById("averageAttendance").textContent = avgAtt.toFixed(2) + "%";
 
-    // Missing values
     let missingCount = 0;
     data.forEach(row => {
         columns.forEach(column => {
@@ -102,32 +84,25 @@ function handleCsvResults(results) {
     });
     document.getElementById("missingValues").textContent = missingCount;
 
-    // Duplicates
     const uniqueRows = new Set();
     data.forEach(row => uniqueRows.add(JSON.stringify(columns.map(c => row[c]))));
     document.getElementById("duplicateRecords").textContent = data.length - uniqueRows.size;
 
-    // Top student
     if (validMarksRows.length) {
-        const top = validMarksRows.reduce((best, r) =>
-            Number(r.Marks) > Number(best.Marks) ? r : best
-        );
-        document.getElementById("topStudent").textContent =
-            (top.Student_ID || "N/A") + " (" + top.Marks + ")";
+        const top = validMarksRows.reduce((best, r) => Number(r.Marks) > Number(best.Marks) ? r : best);
+        document.getElementById("topStudent").textContent = (top.Student_ID || "N/A") + " (" + top.Marks + ")";
     } else {
         document.getElementById("topStudent").textContent = "—";
     }
 
-    // Grade spread
     const grades = {};
     data.forEach(row => {
         const g = row.Grade?.toString().trim() || "Unknown";
         grades[g] = (grades[g] || 0) + 1;
     });
-    document.getElementById("gradeSpread").textContent =
-        Object.keys(grades).length ? Object.keys(grades).join(", ") : "—";
+    document.getElementById("gradeSpread").textContent = Object.keys(grades).length ? Object.keys(grades).join(", ") : "—";
 
-    // Preview table
+    // Generate Table
     const table = document.createElement("table");
     const headerRow = document.createElement("tr");
     columns.forEach(column => {
@@ -150,9 +125,20 @@ function handleCsvResults(results) {
     tableContainer.innerHTML = "";
     tableContainer.appendChild(table);
 
-    // Charts
+    // Trigger animations again for re-upload
+    const summary = document.getElementById("summaryCards");
+    const quality = document.getElementById("qualitySection");
+    const charts = document.getElementById("chartsSection");
+    const preview = document.getElementById("dataPreview");
+
+    [summary, quality, charts, preview].forEach(el => el.classList.remove("fade-in"));
+    void summary.offsetWidth; // trigger reflow
+    [summary, quality, charts, preview].forEach(el => el.classList.add("fade-in"));
+
+    // Destroy old charts before creating new ones
     destroyCharts();
 
+    // 1. Student Performance
     performanceChart = new Chart(document.getElementById("performanceChart"), {
         type: "bar",
         data: {
@@ -163,12 +149,14 @@ function handleCsvResults(results) {
                     const v = Number(r.Marks);
                     return r.Marks?.trim() !== "" && Number.isFinite(v) ? v : null;
                 }),
-                backgroundColor: "#2563eb"
+                backgroundColor: "#D41514",
+                borderRadius: 4
             }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // 2. Department Distribution
     const departments = {};
     data.forEach(row => {
         const d = row.Department?.trim() || "Unknown";
@@ -180,12 +168,14 @@ function handleCsvResults(results) {
             labels: Object.keys(departments),
             datasets: [{
                 data: Object.values(departments),
-                backgroundColor: ["#2563eb", "#0f766e", "#f59e0b", "#9333ea", "#dc2626"]
+                backgroundColor: ["#D41514", "#CDCBCA", "#8a8887", "#ffffff", "#550808"],
+                borderWidth: 0
             }]
         },
-        options: { responsive: true }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // 3. Avg Marks by Department
     const deptMarks = {};
     validMarksRows.forEach(row => {
         const d = row.Department?.trim() || "Unknown";
@@ -193,9 +183,7 @@ function handleCsvResults(results) {
         deptMarks[d].push(Number(row.Marks));
     });
     const deptLabels = Object.keys(deptMarks);
-    const deptAvgs = deptLabels.map(d =>
-        deptMarks[d].reduce((s, v) => s + v, 0) / deptMarks[d].length
-    );
+    const deptAvgs = deptLabels.map(d => deptMarks[d].reduce((s, v) => s + v, 0) / deptMarks[d].length);
     departmentAvgChart = new Chart(document.getElementById("departmentAvgChart"), {
         type: "bar",
         data: {
@@ -203,12 +191,14 @@ function handleCsvResults(results) {
             datasets: [{
                 label: "Average Marks",
                 data: deptAvgs,
-                backgroundColor: "#0f766e"
+                backgroundColor: "#CDCBCA",
+                borderRadius: 4
             }]
         },
-        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
+    // 4. Grade Distribution
     gradeChart = new Chart(document.getElementById("gradeChart"), {
         type: "bar",
         data: {
@@ -216,24 +206,16 @@ function handleCsvResults(results) {
             datasets: [{
                 label: "Students",
                 data: Object.values(grades),
-                backgroundColor: "#9333ea"
+                backgroundColor: "#ffffff",
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
         }
     });
-
-    // Apply smooth fade-in animation to the dashboard sections
-    const summary = document.getElementById("summaryCards");
-    const quality = document.getElementById("qualitySection");
-    const charts = document.getElementById("chartsSection");
-    const preview = document.getElementById("dataPreview");
-
-    [summary, quality, charts, preview].forEach(el => el.classList.remove("animate-in"));
-    void summary.offsetWidth; // Force browser reflow to restart animation
-    [summary, quality, charts, preview].forEach(el => el.classList.add("animate-in"));
 
     alert("Dataset uploaded and displayed successfully!");
 }
@@ -244,7 +226,7 @@ csvFile.addEventListener("change", async function(event) {
 
     const ok = await isLikelyCsv(file);
     if (!ok) {
-        showError("That file does not look like a valid CSV. Please upload a plain-text .csv file.");
+        showError("That file does not look like a valid CSV.");
         csvFile.value = "";
         return;
     }
@@ -254,7 +236,7 @@ csvFile.addEventListener("change", async function(event) {
         skipEmptyLines: true,
         complete: handleCsvResults,
         error: function(error) {
-            showError("Could not read the CSV file. " + error.message);
+            showError("Could not read the CSV file.");
         }
     });
 });
@@ -262,7 +244,6 @@ csvFile.addEventListener("change", async function(event) {
 function resetDashboard() {
     document.getElementById("csvFile").value = "";
     document.getElementById("tableContainer").innerHTML = "";
-
     document.getElementById("totalStudents").textContent = "0";
     document.getElementById("totalColumns").textContent = "0";
     document.getElementById("averageMarks").textContent = "0";
@@ -271,12 +252,5 @@ function resetDashboard() {
     document.getElementById("duplicateRecords").textContent = "0";
     document.getElementById("topStudent").textContent = "—";
     document.getElementById("gradeSpread").textContent = "—";
-
     destroyCharts();
-
-    // Remove animation class so it's fresh for the next upload
-    ["summaryCards", "qualitySection", "chartsSection", "dataPreview"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.remove("animate-in");
-    });
 }
