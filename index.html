@@ -3,117 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignalScope | Analytics</title>
+    <title>SignalScope | Education Analytics</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Two fonts: Space Grotesk for Headings, Inter for Body -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for the dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse for CSV parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-chart-simple"></i> SignalScope
-        </div>
-        <p>Data Intelligence Dashboard</p>
-    </header>
-
-    <main>
-        <!-- Import Section -->
-        <section class="card import-section fade-in">
-            <div class="import-content">
-                <h2>Dataset Overview</h2>
-                <p>Upload a CSV file to instantly analyze student performance and data quality.</p>
-                <input type="file" id="csvFile" accept=".csv" hidden>
+    <!-- ================= LANDING PAGE ================= -->
+    <div id="landing-page">
+        
+        <!-- Ticker Bar -->
+        <div class="ticker-wrapper">
+            <div class="ticker">
+                <span>DATA INTELLIGENCE</span> • <span>100% CLIENT-SIDE</span> • <span>PRIVACY FIRST</span> • 
+                <span>DATA INTELLIGENCE</span> • <span>100% CLIENT-SIDE</span> • <span>PRIVACY FIRST</span> • 
             </div>
-            <div class="button-row">
-                <button onclick="document.getElementById('csvFile').click()" class="btn-primary">
-                    <i class="fa-solid fa-upload"></i> Import Dataset
-                </button>
-                <button id="resetButton" onclick="resetDashboard()" class="btn-secondary">
-                    <i class="fa-solid fa-rotate-left"></i> Reset
-                </button>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="logo">SIGNALSCOPE <span>/ SYS.01</span></div>
+            <button class="btn-primary magnetic" onclick="enterDashboard()">Launch App <span class="arrow">→</span></button>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="bg-glow"></div>
+
+            <div class="hero-content">
+                <div class="label reveal-up">SYSTEM INITIALIZED</div>
+                <h1 class="reveal-up delay-1">Student data<br>has a <span class="serif-italic">story.</span><br><span class="muted">Find it.</span></h1>
+                <p class="reveal-up delay-2">Turn attendance records and academic results into insights you can actually use. Upload your data, explore the patterns, and see what deserves attention.</p>
+                <div class="hero-actions reveal-up delay-3">
+                    <button class="btn-primary magnetic" onclick="enterDashboard()">Explore the dashboard <span class="arrow">→</span></button>
+                    <button class="btn-outline" onclick="scrollToSection('how-it-works')">See how it works</button>
+                </div>
+                <div class="privacy-note reveal-up delay-4">
+                    <span class="status-dot"></span> Your data stays in your browser.
+                </div>
+            </div>
+
+            <!-- Interactive Dashboard Preview -->
+            <div class="hero-preview reveal-scale delay-2">
+                <div class="preview-header">
+                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                    <span class="preview-title">LIVE PREVIEW / SAMPLE DATA</span>
+                </div>
+                <div class="preview-grid">
+                    <div class="preview-card">
+                        <div class="preview-label">Total Students</div>
+                        <div class="preview-value counter" data-target="1240">0</div>
+                    </div>
+                    <div class="preview-card">
+                        <div class="preview-label">Avg Marks</div>
+                        <div class="preview-value counter" data-target="78.5">0</div>
+                    </div>
+                    <div class="preview-card">
+                        <div class="preview-label">Avg Attendance</div>
+                        <div class="preview-value counter" data-target="91">0%</div>
+                    </div>
+                </div>
+                <div class="preview-chart">
+                    <div class="preview-label">Performance Trend (Live)</div>
+                    <div class="mock-bars">
+                        <div class="bar" style="height: 40%; animation-delay: 0.1s;"></div>
+                        <div class="bar" style="height: 60%; animation-delay: 0.2s;"></div>
+                        <div class="bar" style="height: 55%; animation-delay: 0.3s;"></div>
+                        <div class="bar" style="height: 80%; animation-delay: 0.4s;"></div>
+                        <div class="bar" style="height: 70%; animation-delay: 0.5s;"></div>
+                        <div class="bar" style="height: 90%; animation-delay: 0.6s;"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Summary Cards -->
-        <div id="summaryCards" class="fade-in">
-            <div class="summary-card">
-                <h3>Total Students</h3>
-                <p id="totalStudents">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Total Columns</h3>
-                <p id="totalColumns">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Average Marks</h3>
-                <p id="averageMarks">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Average Attendance</h3>
-                <p id="averageAttendance">0</p>
-            </div>
-            <div class="summary-card">
-                <h3>Top Student</h3>
-                <p id="topStudent">—</p>
-            </div>
-            <div class="summary-card">
-                <h3>Grade Spread</h3>
-                <p id="gradeSpread">—</p>
-            </div>
-        </div>
+        <!-- Statement -->
+        <section class="statement scroll-reveal">
+            <h2 class="syne-font">Less time cleaning spreadsheets. <br>More time understanding students.</h2>
+            <p>SignalScope is designed for educators and administrators who need clear answers without wrestling with Excel. Upload your CSV, and let the tool handle the math.</p>
+        </section>
 
-        <!-- Data Quality -->
-        <div id="qualitySection" class="card fade-in">
-            <h2>Data Quality Analysis</h2>
+        <!-- Capabilities -->
+        <section class="capabilities scroll-reveal">
+            <div class="cap-header">
+                <span class="label">WHAT IT DOES</span>
+                <h2 class="syne-font">Core Capabilities.</h2>
+            </div>
+            <div class="cap-grid">
+                <div class="cap-item">
+                    <div class="cap-icon">01</div>
+                    <h3>Import without friction</h3>
+                    <p>Upload a CSV file and inspect its contents directly in the browser.</p>
+                </div>
+                <div class="cap-item">
+                    <div class="cap-icon">02</div>
+                    <h3>Find what matters</h3>
+                    <p>Calculate averages, identify top-performing students, and detect data-quality issues instantly.</p>
+                </div>
+                <div class="cap-item">
+                    <div class="cap-icon">03</div>
+                    <h3>See the patterns</h3>
+                    <p>Explore charts that make student performance and departmental differences easier to understand.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section id="how-it-works" class="how-it-works scroll-reveal">
+            <span class="label">PROCESS</span>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h4>Upload your dataset</h4>
+                    <p>Select your CSV file.</p>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h4>Validate and analyze</h4>
+                    <p>Records are checked and calculated.</p>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h4>Explore the results</h4>
+                    <p>Review the dashboard and charts.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="final-cta scroll-reveal">
+            <h2 class="syne-font">Ready to see what your data says?</h2>
+            <p>Bring a CSV. Leave with a clearer picture.</p>
+            <button class="btn-primary magnetic large-btn" onclick="enterDashboard()">Open SignalScope <span class="arrow">→</span></button>
+        </section>
+
+        <footer class="footer">
+            <div class="footer-logo">SIGNALSCOPE</div>
+            <p>Built with HTML, CSS, JavaScript, PapaParse, and Chart.js.</p>
+        </footer>
+    </div>
+
+    <!-- ================= DASHBOARD ================= -->
+    <div id="dashboard" style="display: none;">
+        <nav class="nav">
+            <div class="logo" style="cursor: pointer;" onclick="goHome()">SIGNALSCOPE <span>/ DASHBOARD</span></div>
+            <div class="dash-actions">
+                <input type="file" id="csvFile" accept=".csv" hidden>
+                <button class="btn-primary" onclick="document.getElementById('csvFile').click()">Import CSV</button>
+                <button class="btn-outline" onclick="resetDashboard()">Reset</button>
+            </div>
+        </nav>
+
+        <main class="dashboard-main">
+            <!-- Summary -->
+            <div class="summary-grid">
+                <div class="card"><p class="card-label">Total Students</p><h2 id="totalStudents">0</h2></div>
+                <div class="card"><p class="card-label">Total Columns</p><h2 id="totalColumns">0</h2></div>
+                <div class="card"><p class="card-label">Avg Marks</p><h2 id="averageMarks">0</h2></div>
+                <div class="card"><p class="card-label">Avg Attendance</p><h2 id="averageAttendance">0</h2></div>
+            </div>
+
+            <!-- Quality -->
             <div class="quality-grid">
-                <div class="quality-card">
-                    <h3>Missing Values</h3>
-                    <p id="missingValues">0</p>
-                </div>
-                <div class="quality-card">
-                    <h3>Duplicate Records</h3>
-                    <p id="duplicateRecords">0</p>
-                </div>
+                <div class="card"><p class="card-label">Missing Values</p><h2 id="missingValues" style="color: var(--accent);">0</h2></div>
+                <div class="card"><p class="card-label">Duplicate Records</p><h2 id="duplicateRecords" style="color: var(--accent);">0</h2></div>
             </div>
-        </div>
 
-        <!-- Charts -->
-        <div id="chartsSection" class="fade-in">
-            <h2>Data Visualization</h2>
+            <!-- Charts -->
             <div class="chart-grid">
-                <div class="chart-card">
-                    <h3>Student Performance</h3>
-                    <canvas id="performanceChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Department Distribution</h3>
-                    <canvas id="departmentChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Avg Marks by Department</h3>
-                    <canvas id="departmentAvgChart"></canvas>
-                </div>
-                <div class="chart-card">
-                    <h3>Grade Distribution</h3>
-                    <canvas id="gradeChart"></canvas>
-                </div>
+                <div class="card chart-card"><h3>Student Performance</h3><canvas id="performanceChart"></canvas></div>
+                <div class="card chart-card"><h3>Department Distribution</h3><canvas id="departmentChart"></canvas></div>
+                <div class="card chart-card"><h3>Avg Marks by Dept</h3><canvas id="departmentAvgChart"></canvas></div>
+                <div class="card chart-card"><h3>Grade Distribution</h3><canvas id="gradeChart"></canvas></div>
             </div>
-        </div>
 
-        <!-- Table -->
-        <div id="dataPreview" class="card fade-in">
-            <h2>Dataset Preview</h2>
-            <div class="table-container">
-                <div id="tableContainer"></div>
+            <!-- Table -->
+            <div class="card">
+                <h3>Dataset Preview</h3>
+                <div class="table-container"><table id="dataTable"></table></div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
