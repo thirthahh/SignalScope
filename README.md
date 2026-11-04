@@ -2,7 +2,7 @@
 
 A browser-based education data analytics dashboard. Upload a CSV of student data to instantly preview records, surface data-quality issues, calculate key statistics, and visualize performance.
 
-![SignalScope Dashboard](screenshot.png)
+### [🚀 View the Live Demo Here](https://thirthahh.github.io/SignalScope/)
 
 ## Features
 
