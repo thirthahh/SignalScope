@@ -1,21 +1,114 @@
+// ==========================================
+// 1. PAGE TRANSITIONS
+// ==========================================
+function enterDashboard() {
+    const landing = document.getElementById('landing-page');
+    const dash = document.getElementById('dashboard');
+    
+    landing.style.opacity = '0';
+    setTimeout(() => {
+        landing.style.display = 'none';
+        dash.style.display = 'block';
+        // Trigger the dashboard fade-in
+        setTimeout(() => dash.classList.add('visible'), 50);
+    }, 300);
+}
+
+function goHome() {
+    const landing = document.getElementById('landing-page');
+    const dash = document.getElementById('dashboard');
+    
+    dash.classList.remove('visible');
+    setTimeout(() => {
+        dash.style.display = 'none';
+        landing.style.display = 'block';
+        setTimeout(() => landing.style.opacity = '1', 50);
+    }, 300);
+}
+
+function scrollToSection(id) {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+}
+
+// ==========================================
+// 2. MAGNETIC BUTTONS
+// ==========================================
+const magneticBtns = document.querySelectorAll('.magnetic');
+magneticBtns.forEach(btn => {
+    btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+    });
+    btn.addEventListener('mouseleave', () => {
+        btn.style.transform = `translate(0px, 0px)`;
+    });
+});
+
+// ==========================================
+// 3. SCROLL REVEAL & COUNTER ANIMATIONS
+// ==========================================
+const observerOptions = { threshold: 0.2 };
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            if (entry.target.classList.contains('hero-preview')) {
+                animateCounters();
+            }
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.scroll-reveal, .hero-preview').forEach(el => observer.observe(el));
+
+function animateCounters() {
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseFloat(counter.getAttribute('data-target'));
+        const duration = 2000; 
+        const startTime = performance.now();
+        const isPercent = counter.innerText.includes('%');
+        const isDecimal = target % 1 !== 0;
+        
+        function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const currentValue = target * easeOut;
+            
+            if (isDecimal) {
+                counter.innerText = currentValue.toFixed(1);
+            } else {
+                counter.innerText = Math.floor(currentValue);
+            }
+            
+            if (isPercent) counter.innerText += '%';
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.innerText = isDecimal ? target.toFixed(1) : target;
+                if (isPercent) counter.innerText += '%';
+            }
+        }
+        requestAnimationFrame(updateCounter);
+    });
+}
+
+// ==========================================
+// 4. CSV & CHART LOGIC (Your existing code)
+// ==========================================
 let performanceChart = null;
 let departmentChart = null;
 let departmentAvgChart = null;
 let gradeChart = null;
 
 const csvFile = document.getElementById("csvFile");
-const tableContainer = document.getElementById("tableContainer");
-
 const REQUIRED_COLUMNS = ["Student_ID", "Department", "Attendance", "Marks", "Grade"];
 
-// Chart.js Global Font and Color settings
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.color = "#8a8887"; // text-muted
-Chart.defaults.borderColor = "#222222"; // border
-
-function showError(message) {
-    alert("⚠️ " + message);
-}
+function showError(message) { alert("⚠️ " + message); }
 
 function isLikelyCsv(file) {
     return new Promise(resolve => {
@@ -24,10 +117,7 @@ function isLikelyCsv(file) {
             const bytes = new Uint8Array(e.target.result);
             for (let i = 0; i < bytes.length; i++) {
                 const b = bytes[i];
-                if (b < 9 || (b > 13 && b < 32)) {
-                    resolve(false);
-                    return;
-                }
+                if (b < 9 || (b > 13 && b < 32)) { resolve(false); return; }
             }
             resolve(true);
         };
@@ -47,21 +137,11 @@ function handleCsvResults(results) {
     const data = results.data;
     const columns = results.meta.fields;
 
-    if (!columns || columns.length === 0) {
-        showError("The CSV file has no columns. Please upload a valid CSV.");
-        return;
-    }
-
-    if (data.length === 0) {
-        showError("The CSV file contains headers but no data rows.");
-        return;
-    }
+    if (!columns || columns.length === 0) { showError("The CSV file has no columns."); return; }
+    if (data.length === 0) { showError("The CSV contains headers but no data."); return; }
 
     const missingColumns = REQUIRED_COLUMNS.filter(col => !columns.includes(col));
-    if (missingColumns.length > 0) {
-        showError("Missing required column(s): " + missingColumns.join(", "));
-        return;
-    }
+    if (missingColumns.length > 0) { showError("Missing column(s): " + missingColumns.join(", ")); return; }
 
     const validMarksRows = data.filter(row => row.Marks?.toString().trim() !== "" && Number.isFinite(Number(row.Marks)));
     const validAttendanceRows = data.filter(row => row.Attendance?.toString().trim() !== "" && Number.isFinite(Number(row.Attendance)));
@@ -88,75 +168,40 @@ function handleCsvResults(results) {
     data.forEach(row => uniqueRows.add(JSON.stringify(columns.map(c => row[c]))));
     document.getElementById("duplicateRecords").textContent = data.length - uniqueRows.size;
 
-    if (validMarksRows.length) {
-        const top = validMarksRows.reduce((best, r) => Number(r.Marks) > Number(best.Marks) ? r : best);
-        document.getElementById("topStudent").textContent = (top.Student_ID || "N/A") + " (" + top.Marks + ")";
-    } else {
-        document.getElementById("topStudent").textContent = "—";
-    }
-
-    const grades = {};
+    // Build Table
+    let tableHTML = "<tr>";
+    columns.forEach(col => { tableHTML += `<th>${col}</th>`; });
+    tableHTML += "</tr>";
+    
     data.forEach(row => {
-        const g = row.Grade?.toString().trim() || "Unknown";
-        grades[g] = (grades[g] || 0) + 1;
+        tableHTML += "<tr>";
+        columns.forEach(col => { tableHTML += `<td>${row[col] ?? ""}</td>`; });
+        tableHTML += "</tr>";
     });
-    document.getElementById("gradeSpread").textContent = Object.keys(grades).length ? Object.keys(grades).join(", ") : "—";
+    document.getElementById("dataTable").innerHTML = tableHTML;
 
-    // Generate Table
-    const table = document.createElement("table");
-    const headerRow = document.createElement("tr");
-    columns.forEach(column => {
-        const th = document.createElement("th");
-        th.textContent = column;
-        headerRow.appendChild(th);
-    });
-    table.appendChild(headerRow);
-
-    data.forEach(row => {
-        const tr = document.createElement("tr");
-        columns.forEach(column => {
-            const td = document.createElement("td");
-            td.textContent = row[column] ?? "";
-            tr.appendChild(td);
-        });
-        table.appendChild(tr);
-    });
-
-    tableContainer.innerHTML = "";
-    tableContainer.appendChild(table);
-
-    // Trigger animations again for re-upload
-    const summary = document.getElementById("summaryCards");
-    const quality = document.getElementById("qualitySection");
-    const charts = document.getElementById("chartsSection");
-    const preview = document.getElementById("dataPreview");
-
-    [summary, quality, charts, preview].forEach(el => el.classList.remove("fade-in"));
-    void summary.offsetWidth; // trigger reflow
-    [summary, quality, charts, preview].forEach(el => el.classList.add("fade-in"));
-
-    // Destroy old charts before creating new ones
     destroyCharts();
 
-    // 1. Student Performance
+    // Chart Options
+    const chartOptions = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: '#8A9A91' } },
+            y: { grid: { color: '#2A2A2A' }, ticks: { color: '#8A9A91' } }
+        }
+    };
+
+    // Charts
     performanceChart = new Chart(document.getElementById("performanceChart"), {
         type: "bar",
         data: {
             labels: data.map(r => r.Student_ID),
-            datasets: [{
-                label: "Student Marks",
-                data: data.map(r => {
-                    const v = Number(r.Marks);
-                    return r.Marks?.trim() !== "" && Number.isFinite(v) ? v : null;
-                }),
-                backgroundColor: "#D41514",
-                borderRadius: 4
-            }]
+            datasets: [{ data: data.map(r => Number(r.Marks) || null), backgroundColor: "#A31C1B", borderRadius: 4 }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: chartOptions
     });
 
-    // 2. Department Distribution
     const departments = {};
     data.forEach(row => {
         const d = row.Department?.trim() || "Unknown";
@@ -166,16 +211,11 @@ function handleCsvResults(results) {
         type: "doughnut",
         data: {
             labels: Object.keys(departments),
-            datasets: [{
-                data: Object.values(departments),
-                backgroundColor: ["#D41514", "#CDCBCA", "#8a8887", "#ffffff", "#550808"],
-                borderWidth: 0
-            }]
+            datasets: [{ data: Object.values(departments), backgroundColor: ["#A31C1B", "#F0F0F0", "#8A9A91", "#2A2A2A"], borderWidth: 0 }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
     });
 
-    // 3. Avg Marks by Department
     const deptMarks = {};
     validMarksRows.forEach(row => {
         const d = row.Department?.trim() || "Unknown";
@@ -184,73 +224,49 @@ function handleCsvResults(results) {
     });
     const deptLabels = Object.keys(deptMarks);
     const deptAvgs = deptLabels.map(d => deptMarks[d].reduce((s, v) => s + v, 0) / deptMarks[d].length);
+    
     departmentAvgChart = new Chart(document.getElementById("departmentAvgChart"), {
         type: "bar",
         data: {
             labels: deptLabels,
-            datasets: [{
-                label: "Average Marks",
-                data: deptAvgs,
-                backgroundColor: "#CDCBCA",
-                borderRadius: 4
-            }]
+            datasets: [{ data: deptAvgs, backgroundColor: "#F0F0F0", borderRadius: 4 }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: chartOptions
     });
 
-    // 4. Grade Distribution
+    const grades = {};
+    data.forEach(row => {
+        const g = row.Grade?.toString().trim() || "Unknown";
+        grades[g] = (grades[g] || 0) + 1;
+    });
     gradeChart = new Chart(document.getElementById("gradeChart"), {
         type: "bar",
         data: {
             labels: Object.keys(grades),
-            datasets: [{
-                label: "Students",
-                data: Object.values(grades),
-                backgroundColor: "#ffffff",
-                borderRadius: 4
-            }]
+            datasets: [{ data: Object.values(grades), backgroundColor: "#8A9A91", borderRadius: 4 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-        }
+        options: { ...chartOptions, scales: { ...chartOptions.scales, y: { beginAtZero: true, ticks: { stepSize: 1, color: '#8A9A91' }, grid: { color: '#2A2A2A' } } } }
     });
 
-    alert("Dataset uploaded and displayed successfully!");
+    alert("Dataset loaded successfully.");
 }
 
 csvFile.addEventListener("change", async function(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const ok = await isLikelyCsv(file);
-    if (!ok) {
-        showError("That file does not look like a valid CSV.");
-        csvFile.value = "";
-        return;
-    }
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: handleCsvResults,
-        error: function(error) {
-            showError("Could not read the CSV file.");
-        }
-    });
+    if (!ok) { showError("Not a valid CSV file."); csvFile.value = ""; return; }
+    Papa.parse(file, { header: true, skipEmptyLines: true, complete: handleCsvResults, error: function(error) { showError("Could not read the file."); } });
 });
 
 function resetDashboard() {
     document.getElementById("csvFile").value = "";
-    document.getElementById("tableContainer").innerHTML = "";
+    document.getElementById("dataTable").innerHTML = "";
     document.getElementById("totalStudents").textContent = "0";
     document.getElementById("totalColumns").textContent = "0";
     document.getElementById("averageMarks").textContent = "0";
     document.getElementById("averageAttendance").textContent = "0";
     document.getElementById("missingValues").textContent = "0";
     document.getElementById("duplicateRecords").textContent = "0";
-    document.getElementById("topStudent").textContent = "—";
-    document.getElementById("gradeSpread").textContent = "—";
     destroyCharts();
 }
